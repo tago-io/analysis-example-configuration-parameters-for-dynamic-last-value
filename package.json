@@ -1,0 +1,17 @@
+{
+  "name": "@tago-io/analysis-example-configuration-parameters-for-dynamic-last-value",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simple example using TagoIO Analysis",
+  "main": "analysis.js",
+  "repository": "tago-io/analysis-example-configuration-parameters-for-dynamic-last-value",
+  "author": "Tago LLC",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tago-io/analysis-example-simple/issues"
+  },
+  "homepage": "https://github.com/tago-io/analysis-example-simple#readme",
+  "dependencies": {
+    "@tago-io/sdk": "10.7.6"
+  }
+}
