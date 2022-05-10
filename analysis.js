@@ -1,4 +1,10 @@
 /*
+ ** Analysis Example
+ ** Configuration parameters for dynamic last value
+ **
+ ** Set the configurations parameters with the last value of a given variable, 
+ ** in this example it is the "temperature" variable
+ **
  ** Environment Variables
  ** In order to use this analysis, you must setup the Environment Variable table.
  **
