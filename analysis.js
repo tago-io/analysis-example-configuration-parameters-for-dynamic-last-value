@@ -17,7 +17,7 @@
  ** 4 - Generate a new Token with Expires Never.
  ** 5 - Press the Copy Button and place at the Environment Variables tab of this analysis.
 */
-const { Account, Utils, Analysis } = require('@tago-io/sdk');
+const { Resources, Analysis } = require('@tago-io/sdk');
 const { queue } = require('async');
 const moment = require('moment-timezone');
 
@@ -25,21 +25,20 @@ const moment = require('moment-timezone');
 let timezone = 'America/New_York';
 
 const getParam = (params, key) => params.find(x => x.key === key) || { key, value: '-', sent: false };
-async function applyDeviceCalculation({ id: deviceID, name, account }) {
+async function applyDeviceCalculation({ id: deviceID, name }) {
   const deviceInfoText = `${name}(${deviceID}`;
   console.info(`Processing Device ${deviceInfoText})`);
-  const device = await Utils.getDevice(account, deviceID);
 
    // Get the temperature variable inside the device bucket.
    // notice it will get the last record at the time the analysis is running.
-  const dataResult = await device.getData({ variables: ['temperature'], query: 'last_value' });
+  const dataResult = await Resources.devices.getDeviceData(deviceID, { variables: ['temperature'], query: 'last_value' });
   if (!dataResult.length) {
     console.error(`No data found for ${deviceInfoText}`);
     return;
   }
 
    // Get configuration params list of the device
-  const deviceParams = await account.devices.paramList(deviceID);
+  const deviceParams = await Resources.devices.paramList(deviceID);
 
    // get the variable temperature from our dataResult array
   const temperature = dataResult.find(data => data.variable === 'temperature');
@@ -54,7 +53,7 @@ async function applyDeviceCalculation({ id: deviceID, name, account }) {
      // creates or edit the tempreature Param with the value of temperature.
      // creates or edit the last_record_time Param with the time of temperature.
      // Make sure to cast the value to STRING, otherwise you'll get an error.
-    await account.devices.paramSet(deviceID, [
+    await Resources.devices.paramSet(deviceID, [
        { ...temperatureParam, value: String(temperature.value) },
        { ...lastRecordParam, value: timeString },
     ]);
@@ -63,19 +62,8 @@ async function applyDeviceCalculation({ id: deviceID, name, account }) {
 
    // scope is not used for Schedule action.
 async function startAnalysis(context, scope) {
-  const environment = Utils.envToJson(context.environment);
-  if (!environment) {
-    return;
-  }
-
-  if (!environment.account_token) {
-    throw 'Missing account_token environment var';
-  }
-   // Make sure you have account_token tag in the environment variable of the analysis.
-  const account = new Account({ token: environment.account_token });
-
   // get timezone from the account
-  ({ timezone } = await account.info());
+  ({ timezone } = await Resources.account.info());
 
    // Create a queue, so we don't run on Throughput errors.
    // The queue will make sure we check only 5 devices simultaneously.
@@ -83,7 +71,7 @@ async function startAnalysis(context, scope) {
 
    // fetch device list filtered by tags.
    // Device list always return an Array with DeviceInfo object.
-  const deviceList = await account.devices.list({
+  const deviceList = await Resources.devices.list({
     amount: 500,
     fields: ['id', 'name', 'tags'],
     filter: {
