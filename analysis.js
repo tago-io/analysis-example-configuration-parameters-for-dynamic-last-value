@@ -79,5 +79,4 @@ async function startAnalysis(context, scope) {
    // Wait for all queue to be processed
   await processQueue.drain();
 }
-
-module.exports = new Analysis(startAnalysis);
+Analysis.use(startAnalysis);
